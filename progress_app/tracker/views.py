@@ -1,3 +1,109 @@
-from django.shortcuts import render
+import os,base64,json
+from datetime import date, datetime
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import User
+from .models import Goal
 
-# Create your views here.
+@csrf_exempt  # 学習用：ローカル限定で CSRF 無効化
+def save_screenshot(request):
+    """
+    フロントから送られてきた画像データを
+    日付＋時間つきのファイル名で保存するビュー
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=400)
+
+    # JSON を読む
+    data = json.loads(request.body.decode("utf-8"))
+    data_url = data.get("image")
+
+    # "data:image/png;base64,xxxxx" を分解
+    header, encoded = data_url.split(",", 1)
+    image_data = base64.b64decode(encoded)
+
+    # 保存先フォルダ（プロジェクト直下 /screenshots）
+    save_dir = os.path.join(settings.BASE_DIR, "screenshots")
+    os.makedirs(save_dir, exist_ok=True)
+
+    # ---------- ★ここが追加・変更ポイント ----------
+    # ファイル名：progress_YYYY-MM-DD_HH-MM-SS.png
+    now = datetime.now()
+    filename = now.strftime("progress_%Y-%m-%d_%H-%M-%S.png")
+    # ---------------------------------------------
+
+    filepath = os.path.join(save_dir, filename)
+
+    # ファイルとして保存
+    with open(filepath, "wb") as f:
+        f.write(image_data)
+
+    return JsonResponse({"status": "ok", "filename": filename})
+
+
+def toggle_done(request, goal_id):
+    """
+    目標の達成状態（is_done）を ON / OFF 切り替える
+    """
+    goal = get_object_or_404(Goal, id=goal_id)
+    goal.is_done = not goal.is_done
+    goal.save()
+    return redirect("tracker:home")
+
+
+def home(request):
+    # 今日の日付
+    today = date.today()
+
+    # 今日の目標を取得
+    goals = Goal.objects.filter(date=today)
+
+    # --- 進捗率計算 ---
+    total_weight = sum(goal.weight for goal in goals)
+    done_weight = sum(goal.weight for goal in goals if goal.is_done)
+
+    if total_weight > 0:
+        progress_percent = int((done_weight / total_weight) * 100)
+    else:
+        progress_percent = 0
+
+    context = {
+        "goals": goals,
+        "progress_percent": progress_percent,
+    }
+    return render(request, "tracker/home.html", context)
+
+
+def add_goal(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        difficulty = request.POST.get("difficulty")
+
+        weight_map = {
+            "small": 1,
+            "medium": 3,
+            "large": 5,
+        }
+        weight = weight_map[difficulty]
+
+        user = User.objects.first()
+
+        Goal.objects.create(
+            user=user,
+            title=title,
+            difficulty=difficulty,
+            weight=weight,
+            is_done=False,
+            date=date.today(),
+        )
+
+        return redirect("tracker:home")
+
+    return render(request, "tracker/add_goal.html")
+
+def delete_goal(request, goal_id):
+    goal = get_object_or_404(Goal, id=goal_id)
+    goal.delete()
+    return redirect("tracker:home")

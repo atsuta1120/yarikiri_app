@@ -1,0 +1,22 @@
+<!-- home.html TODOイメージ -->
+<!--
+- 今日の日付と達成率の表示
+- 進捗バー用の div （width を style で変える想定）
+- Goal 一覧テーブル or リスト
+- 各行に「達成ボタン or チェックボックス」→ toggle_goal へリンク
+-->
+
+<!-- add_goal.html TODOイメージ -->
+<!--
+- form method="POST"
+- csrf_token
+- 目標名 input
+- 難易度 select（small, medium, large を value に）
+- 送信ボタン
+-->
+
+<!-- dashboard.html TODOイメージ -->
+<!--
+- 期間選択（あとで実装）
+- 総達成数、平均達成率などの表示エリア
+-->

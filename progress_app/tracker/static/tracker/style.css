@@ -1,0 +1,250 @@
+/* tracker/static/tracker/style.css */
+
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+  --radius: 16px;
+
+  --primary: #2563eb;
+  --primary-weak: #dbeafe;
+
+  --success: #16a34a;
+  --success-weak: #dcfce7;
+
+  --danger: #ef4444;
+  --danger-weak: #fee2e2;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 920px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0.2px;
+}
+
+.sub {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+/* ★ スクショ範囲をピッタリにするカード（余白を減らす） */
+.captureCard {
+  padding: 14px;              /* ← ここを小さくするとさらに詰められる */
+  border-radius: 14px;
+}
+
+/* ★ スクショ時、余計な余白を作らないためのラッパ */
+.captureInner {
+  margin: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 14px;
+}
+
+@media (max-width: 720px) {
+  .row { grid-template-columns: 1fr; }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn:hover { filter: brightness(0.98); }
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.btn-ghost { background: #fff; }
+
+.btn-success {
+  background: var(--success-weak);
+  border-color: var(--success-weak);
+  color: #14532d;
+}
+
+.btn-danger {
+  background: var(--danger-weak);
+  border-color: var(--danger-weak);
+  color: #7f1d1d;
+}
+
+.progressWrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.progressLabel {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.progressValue {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.barOuter {
+  width: 100%;
+  height: 14px;
+  background: #eef2ff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barInner {
+  height: 100%;
+  width: 0%;
+  background: var(--primary);
+}
+
+.sectionTitle {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+}
+
+.item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.itemTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.meta {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--muted);
+}
+
+.badge-strong { background: #fff7ed; border-color: #ffedd5; color: #7c2d12; }
+.badge-medium { background: #fefce8; border-color: #fef9c3; color: #713f12; }
+.badge-small  { background: #eff6ff; border-color: #dbeafe; color: #1e3a8a; }
+
+.empty {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ------------------------
+   フォーム用（add_goal）
+------------------------ */
+.formCard {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.input, .select {
+  width: 100%;
+  padding: 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+  background: #fff;
+}
+
+.input:focus, .select:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(147,197,253,0.35);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}

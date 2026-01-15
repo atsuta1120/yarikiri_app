@@ -1,0 +1,132 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>今日の進捗</title>
+  <link rel="stylesheet" href="{% static 'tracker/style.css' %}">
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div>
+        <h1 class="title">今日の目標</h1>
+        <p class="sub">重み（小=1 / 中=3 / 大=5）で進捗が変わります</p>
+      </div>
+    </div>
+
+    <!-- スクショ範囲 -->
+    <div id="capture-area" class="card captureCard">
+      <div class="captureInner">
+
+        <div class="row">
+          <div>
+            <div class="progressWrap">
+              <div class="progressLabel">今日の進捗</div>
+              <div class="progressValue">{{ progress_percent }}%</div>
+            </div>
+
+            <div class="barOuter" aria-label="progress bar">
+              <div class="barInner" style="width: {{ progress_percent }}%;"></div>
+            </div>
+
+            <p class="sub" style="margin-top:10px;">
+              ※ 🎉 を押すと進捗が更新されます
+            </p>
+          </div>
+
+          <div>
+            <h3 class="sectionTitle">操作</h3>
+            <div style="display:grid; gap:10px;">
+              <a class="btn btn-ghost" href="{% url 'tracker:add_goal' %}">＋ 目標を追加</a>
+              <button class="btn btn-primary" type="button" onclick="saveScreenshot()">📸 今日を保存</button>
+            </div>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #e5e7eb; margin:16px 0;">
+
+        <h3 class="sectionTitle">目標一覧</h3>
+
+        {% if goals %}
+          <div class="list">
+            {% for goal in goals %}
+              <div class="item" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+
+                <!-- 左側：目標情報 -->
+                <div style="min-width:0;">
+                  <p class="itemTitle" style="margin:0;">
+                    {% if goal.is_done %}✅{% else %}⬜{% endif %}
+                    {{ goal.title }}
+                  </p>
+
+                  <div class="meta" style="margin-top:8px;">
+                    {% if goal.difficulty == 'large' %}
+                      <span class="badge badge-strong">難易度：大（重み{{ goal.weight }}）</span>
+                    {% elif goal.difficulty == 'medium' %}
+                      <span class="badge badge-medium">難易度：中（重み{{ goal.weight }}）</span>
+                    {% else %}
+                      <span class="badge badge-small">難易度：小（重み{{ goal.weight }}）</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- 右端：ボタン（🎉 / 🗑️） -->
+                <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+                  <a class="btn btn-success"
+                     href="{% url 'tracker:toggle_done' goal.id %}"
+                     title="達成 / 解除"
+                     style="font-size:18px;">
+                     🎉
+                  </a>
+
+                  <a class="btn btn-ghost"
+                     href="{% url 'tracker:delete_goal' goal.id %}"
+                     onclick="return confirm('この目標を削除しますか？');"
+                     title="削除"
+                     style="font-size:18px;">
+                     🗑️
+                  </a>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty">今日の目標はまだ登録されていません。</p>
+        {% endif %}
+
+      </div>
+    </div>
+    <!-- スクショ範囲ここまで -->
+
+  </div>
+
+  <!-- html2canvas -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+  function saveScreenshot() {
+    const target = document.getElementById("capture-area");
+
+    html2canvas(target).then(function(canvas) {
+      const dataUrl = canvas.toDataURL("image/png");
+
+      fetch("{% url 'tracker:save_screenshot' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl })
+      })
+      .then(response => response.json())
+      .then(data => { alert("保存しました: " + data.filename); })
+      .catch(err => { console.error(err); alert("保存に失敗しました"); });
+    });
+  }
+  </script>
+
+</body>
+</html>
