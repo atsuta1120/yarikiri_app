@@ -6,6 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from .models import Goal
+import uuid
+
 
 @csrf_exempt  # 学習用：ローカル限定で CSRF 無効化
 def save_screenshot(request):
@@ -53,14 +55,15 @@ def toggle_done(request, goal_id):
     return redirect("tracker:home")
 
 
+
+
 def home(request):
-    # 今日の日付
     today = date.today()
 
-    # 今日の目標を取得
-    goals = Goal.objects.filter(date=today)
+    client_id, is_new = get_client_id(request)
 
-    # --- 進捗率計算 ---
+    goals = Goal.objects.filter(client_id=client_id, date=today)
+
     total_weight = sum(goal.weight for goal in goals)
     done_weight = sum(goal.weight for goal in goals if goal.is_done)
 
@@ -73,25 +76,35 @@ def home(request):
         "goals": goals,
         "progress_percent": progress_percent,
     }
-    return render(request, "tracker/home.html", context)
+
+    response = render(request, "tracker/home.html", context)
+
+    # Cookieが無かった場合だけセット
+    if is_new:
+        response.set_cookie(
+            CLIENT_ID_COOKIE,
+            client_id,
+            max_age=60 * 60 * 24 * 365,  # 1年
+            samesite="Lax",
+        )
+
+    return response
+
 
 
 def add_goal(request):
+    client_id, is_new = get_client_id(request)
+
     if request.method == "POST":
         title = request.POST.get("title")
         difficulty = request.POST.get("difficulty")
 
-        weight_map = {
-            "small": 1,
-            "medium": 3,
-            "large": 5,
-        }
+        weight_map = {"small": 1, "medium": 3, "large": 5}
         weight = weight_map[difficulty]
 
-        user = User.objects.first()
-
         Goal.objects.create(
-            user=user,
+            client_id=client_id,
+            user=User.objects.first(),  # ここは今まで通り（将来ログイン導入で消す）
             title=title,
             difficulty=difficulty,
             weight=weight,
@@ -99,11 +112,49 @@ def add_goal(request):
             date=date.today(),
         )
 
-        return redirect("tracker:home")
+        response = redirect("tracker:home")
+        if is_new:
+            response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60*60*24*365, samesite="Lax")
+        return response
 
-    return render(request, "tracker/add_goal.html")
+    response = render(request, "tracker/add_goal.html")
+    if is_new:
+        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60*60*24*365, samesite="Lax")
+    return response
+
+def toggle_done(request, goal_id):
+    client_id, is_new = get_client_id(request)
+
+    goal = get_object_or_404(Goal, id=goal_id, client_id=client_id)
+    goal.is_done = not goal.is_done
+    goal.save()
+
+    response = redirect("tracker:home")
+    if is_new:
+        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60*60*24*365, samesite="Lax")
+    return response
+
 
 def delete_goal(request, goal_id):
-    goal = get_object_or_404(Goal, id=goal_id)
+    client_id, is_new = get_client_id(request)
+
+    goal = get_object_or_404(Goal, id=goal_id, client_id=client_id)
     goal.delete()
-    return redirect("tracker:home")
+
+    response = redirect("tracker:home")
+    if is_new:
+        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60*60*24*365, samesite="Lax")
+    return response
+
+
+CLIENT_ID_COOKIE = "yarikiri_client_id"
+
+def get_client_id(request):
+    """
+    Cookieから client_id を取得。無ければ新規発行して返す。
+    ※ Cookieにセットするのはレスポンス側で行う
+    """
+    cid = request.COOKIES.get(CLIENT_ID_COOKIE)
+    if cid:
+        return cid, False
+    return str(uuid.uuid4()), True

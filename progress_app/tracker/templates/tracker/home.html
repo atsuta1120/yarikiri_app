@@ -109,24 +109,39 @@
   <!-- html2canvas -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <script>
-  function saveScreenshot() {
-    const target = document.getElementById("capture-area");
+<script>
+function saveScreenshot() {
+  const target = document.getElementById("capture-area");
 
-    html2canvas(target).then(function(canvas) {
-      const dataUrl = canvas.toDataURL("image/png");
+  html2canvas(target).then(function(canvas) {
+    // 画像データ生成
+    canvas.toBlob(function(blob) {
+      // ファイル名：YYYYMMDD_HHMMSS.png
+      const now = new Date();
+      const pad = n => String(n).padStart(2, "0");
+      const filename =
+        now.getFullYear() +
+        pad(now.getMonth() + 1) +
+        pad(now.getDate()) + "_" +
+        pad(now.getHours()) +
+        pad(now.getMinutes()) +
+        pad(now.getSeconds()) +
+        ".png";
 
-      fetch("{% url 'tracker:save_screenshot' %}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: dataUrl })
-      })
-      .then(response => response.json())
-      .then(data => { alert("保存しました: " + data.filename); })
-      .catch(err => { console.error(err); alert("保存に失敗しました"); });
-    });
-  }
-  </script>
+      // ダウンロード処理
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, "image/png");
+  });
+}
+</script>
+
 
 </body>
 </html>

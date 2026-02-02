@@ -34,4 +34,4 @@ class Goal(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # TODO: 必要なら __str__ を実装（タイトルを返すなど）
+    client_id = models.CharField(max_length=36, db_index=True, null=True, blank=True)
