@@ -75,22 +75,34 @@
                   </div>
                 </div>
 
-                <!-- 右端：ボタン（🎉 / 🗑️） -->
+                <!-- 右端：ボタン（🎉 / 🗑️）※POSTのみ -->
                 <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
-                  <a class="btn btn-success"
-                     href="{% url 'tracker:toggle_done' goal.id %}"
-                     title="達成 / 解除"
-                     style="font-size:18px;">
-                     🎉
-                  </a>
 
-                  <a class="btn btn-ghost"
-                     href="{% url 'tracker:delete_goal' goal.id %}"
-                     onclick="return confirm('この目標を削除しますか？');"
-                     title="削除"
-                     style="font-size:18px;">
-                     🗑️
-                  </a>
+                  <!-- 🎉：POSTでtoggle -->
+                  <form method="post" action="{% url 'tracker:toggle_done' goal.id %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn btn-success"
+                            title="達成 / 解除"
+                            style="font-size:18px;">
+                      🎉
+                    </button>
+                  </form>
+
+                  <!-- 🗑️：POSTでdelete -->
+                  <form method="post"
+                        action="{% url 'tracker:delete_goal' goal.id %}"
+                        style="margin:0;"
+                        onsubmit="return confirm('この目標を削除しますか？');">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn btn-ghost"
+                            title="削除"
+                            style="font-size:18px;">
+                      🗑️
+                    </button>
+                  </form>
+
                 </div>
 
               </div>
@@ -141,7 +153,6 @@ function saveScreenshot() {
   });
 }
 </script>
-
 
 </body>
 </html>
