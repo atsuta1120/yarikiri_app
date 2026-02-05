@@ -9,7 +9,7 @@ class Goal(models.Model):
     難易度に応じた重みを持つ。
     """
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
 
     DIFFICULTY_CHOICES = [
         ('small', '小'),
