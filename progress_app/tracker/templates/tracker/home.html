@@ -125,10 +125,19 @@
 function saveScreenshot() {
   const target = document.getElementById("capture-area");
 
-  html2canvas(target,{backgroundColor:"#ffffff"}).then(function(canvas) {
-    // 画像データ生成
+  // スクショ時だけ影を消す（任意だけど効果大）
+  target.classList.add("noShadow");
+
+  html2canvas(target, {
+    backgroundColor: "#ffffff", // ★これが本命
+    useCORS: true,
+    scale: 2
+  }).then(function(canvas) {
+
+    // 影を戻す
+    target.classList.remove("noShadow");
+
     canvas.toBlob(function(blob) {
-      // ファイル名：YYYYMMDD_HHMMSS.png
       const now = new Date();
       const pad = n => String(n).padStart(2, "0");
       const filename =
@@ -140,7 +149,6 @@ function saveScreenshot() {
         pad(now.getSeconds()) +
         ".png";
 
-      // ダウンロード処理
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -150,6 +158,8 @@ function saveScreenshot() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, "image/png");
+  }).catch(() => {
+    target.classList.remove("noShadow");
   });
 }
 </script>

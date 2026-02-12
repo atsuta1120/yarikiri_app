@@ -69,9 +69,14 @@ body {
   background: #ffffff;
 }
 
+.captureCard.noShadow {
+  box-shadow: none !important;
+}
+
 /* ★ スクショ時、余計な余白を作らないためのラッパ */
 .captureInner {
   margin: 0;
+  background: #ffffff;
 }
 
 .row {
