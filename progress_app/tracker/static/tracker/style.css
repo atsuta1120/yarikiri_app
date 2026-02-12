@@ -66,6 +66,7 @@ body {
 .captureCard {
   padding: 14px;              /* ← ここを小さくするとさらに詰められる */
   border-radius: 14px;
+  background: #ffffff;
 }
 
 /* ★ スクショ時、余計な余白を作らないためのラッパ */

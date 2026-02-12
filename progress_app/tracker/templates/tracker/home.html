@@ -125,7 +125,7 @@
 function saveScreenshot() {
   const target = document.getElementById("capture-area");
 
-  html2canvas(target).then(function(canvas) {
+  html2canvas(target,{backgroundColor:"#ffffff"}).then(function(canvas) {
     // 画像データ生成
     canvas.toBlob(function(blob) {
       // ファイル名：YYYYMMDD_HHMMSS.png
