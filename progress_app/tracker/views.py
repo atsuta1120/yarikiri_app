@@ -18,7 +18,7 @@ def home(request):
         "tracker/home.html",
         {
             "goals": goals,
-            "progress": progress,
+            "progress_percent": progress,
             "total_weight": total_weight,
             "done_weight": done_weight,
         },
