@@ -13,4 +13,5 @@ urlpatterns = [
 
     path("delete/<int:goal_id>/", views.delete_goal, name="delete_goal"),
 
+    path("create-admin-once/",views.create_admin_once,name="create_admin_once"),
 ]
