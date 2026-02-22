@@ -103,9 +103,3 @@ def delete_goal(request, goal_id):
     if is_new:
         response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax")
     return response
-
-def create_admin_once(request):
-    if not User.objects.filter(username="kazuki1120").exists():
-        User.objects.create_superuser("kazuki1120", "kazuki1120@example.com", "Soccer112@53")
-        return HttpResponse("kazuki1120 created")
-    return HttpResponse("already exists")
