@@ -3,7 +3,6 @@ from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Goal
 from .utils import get_client_id, CLIENT_ID_COOKIE
-
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 

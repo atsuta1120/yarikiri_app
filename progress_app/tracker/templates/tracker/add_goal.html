@@ -24,12 +24,25 @@
     </div>
 
     <div class="card formCard">
+
+      {% if error %}
+        <div style="color:#ef4444; margin-bottom:12px; font-weight:600;">
+          {{ error }}
+        </div>
+      {% endif %}
+
       <form method="POST">
         {% csrf_token %}
 
         <div class="field">
           <div class="label">目標名</div>
-          <input class="input" type="text" name="title" placeholder="例：筋トレ / 英語 / 読書" required>
+          <input
+            class="input"
+            type="text"
+            name="title"
+            placeholder="例：筋トレ / 英語 / 読書"
+            required
+          >
         </div>
 
         <div class="field">
@@ -45,6 +58,7 @@
           <button class="btn btn-primary" type="submit">登録</button>
           <a class="btn btn-ghost" href="{% url 'tracker:home' %}">キャンセル</a>
         </div>
+
       </form>
     </div>
 
