@@ -158,6 +158,18 @@ body {
   height: 100%;
   width: 0%;
   background: var(--primary);
+  transition: width 0.6s ease;
+}
+
+.barInner.barComplete {
+  background: linear-gradient(90deg, var(--success), #4ade80);
+}
+
+.completeMsg {
+  margin-top: 10px;
+  font-weight: 700;
+  color: var(--success);
+  font-size: 15px;
 }
 
 .sectionTitle {

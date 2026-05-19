@@ -31,12 +31,14 @@
             </div>
 
             <div class="barOuter" aria-label="progress bar">
-              <div class="barInner" style="width: {{ progress_percent }}%;"></div>
+              <div class="barInner{% if progress_percent == 100 %} barComplete{% endif %}" style="width: {{ progress_percent }}%;"></div>
             </div>
 
-            <p class="sub" style="margin-top:10px;">
-              ※ 🎉 を押すと進捗が更新されます
-            </p>
+            {% if progress_percent == 100 %}
+              <p class="completeMsg">🎉 全タスク完了！おめでとうございます</p>
+            {% else %}
+              <p class="sub" style="margin-top:10px;">※ 🎉 を押すと進捗が更新されます</p>
+            {% endif %}
           </div>
 
           <div>
