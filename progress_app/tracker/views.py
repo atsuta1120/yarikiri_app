@@ -1,15 +1,14 @@
-from datetime import date
-from django.http import HttpResponseNotAllowed
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from .models import Goal
 from .utils import get_client_id, CLIENT_ID_COOKIE
-from django.contrib.auth.models import User
-from django.http import HttpResponse
 
 def home(request):
     client_id, is_new = get_client_id(request)
 
-    goals = Goal.objects.filter(client_id=client_id, date=date.today()).order_by("-created_at")
+    goals = Goal.objects.filter(client_id=client_id, date=timezone.localdate()).order_by("-created_at")
 
     total_weight = sum(g.weight for g in goals)
     done_weight = sum(g.weight for g in goals if g.is_done)
@@ -27,7 +26,7 @@ def home(request):
     )
 
     if is_new:
-        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax")
+        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
 
     return response
 
@@ -43,14 +42,14 @@ def add_goal(request):
         if not title:
             response = render(request, "tracker/add_goal.html", {"error": "タイトルを入力してください"})
             if is_new:
-                response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax")
+                response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
             return response
 
         weight_map = {"small": 1, "medium": 3, "large": 5}
         if difficulty not in weight_map:
             response = render(request, "tracker/add_goal.html", {"error": "難易度が不正です"})
             if is_new:
-                response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax")
+                response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
             return response
 
         Goal.objects.create(
@@ -59,17 +58,17 @@ def add_goal(request):
             difficulty=difficulty,
             weight=weight_map[difficulty],
             is_done=False,
-            date=date.today(),
+            date=timezone.localdate(),
         )
 
         response = redirect("tracker:home")
         if is_new:
-            response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax")
+            response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
         return response
 
     response = render(request, "tracker/add_goal.html")
     if is_new:
-        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax")
+        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
     return response
 
 
@@ -85,7 +84,7 @@ def toggle_done(request, goal_id):
 
     response = redirect("tracker:home")
     if is_new:
-        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax")
+        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
     return response
 
 
@@ -100,5 +99,5 @@ def delete_goal(request, goal_id):
 
     response = redirect("tracker:home")
     if is_new:
-        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax")
+        response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
     return response
