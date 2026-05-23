@@ -1,16 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
 
 
 class Goal(models.Model):
-    """
-    1つの「目標」を表すモデル。
-    ユーザーが日ごとに自由に作成し、
-    難易度に応じた重みを持つ。
-    """
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
-
     DIFFICULTY_CHOICES = [
         ('small', '小'),
         ('medium', '中'),
