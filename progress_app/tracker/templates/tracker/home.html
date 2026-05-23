@@ -85,9 +85,9 @@
                   <form method="post" action="{% url 'tracker:toggle_done' goal.id %}" style="margin:0;">
                     {% csrf_token %}
                     {% if goal.is_done %}
-                      <button type="submit" class="btn btn-muted" title="完了を取り消す">↩ 取消</button>
+                      <button type="submit" class="btn btn-muted" title="完了を取り消す">↩️</button>
                     {% else %}
-                      <button type="submit" class="btn btn-success" title="完了にする">✓ 完了</button>
+                      <button type="submit" class="btn btn-success" title="完了にする">🎉</button>
                     {% endif %}
                   </form>
 
