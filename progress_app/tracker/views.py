@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from .models import Goal
 from .utils import get_client_id, CLIENT_ID_COOKIE
@@ -68,12 +69,13 @@ def add_goal(request):
             date=timezone.localdate(),
         )
 
-        response = redirect("tracker:home")
+        response = redirect(reverse("tracker:add_goal") + "?added=1")
         if is_new:
             response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
         return response
 
-    response = render(request, "tracker/add_goal.html")
+    added = request.GET.get("added") == "1"
+    response = render(request, "tracker/add_goal.html", {"added": added})
     if is_new:
         response.set_cookie(CLIENT_ID_COOKIE, client_id, max_age=60 * 60 * 24 * 365, samesite="Lax", httponly=True, secure=not settings.DEBUG)
     return response

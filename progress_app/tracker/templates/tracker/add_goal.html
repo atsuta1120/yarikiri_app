@@ -26,6 +26,12 @@
 
     <div class="card formCard">
 
+      {% if added %}
+        <div style="color:#16a34a; margin-bottom:12px; font-weight:600;">
+          ✓ 目標を追加しました。続けて登録できます。
+        </div>
+      {% endif %}
+
       {% if error %}
         <div style="color:#ef4444; margin-bottom:12px; font-weight:600;">
           {{ error }}
