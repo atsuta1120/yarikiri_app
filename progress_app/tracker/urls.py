@@ -4,12 +4,10 @@ from . import views
 app_name = "tracker"
 
 urlpatterns = [
-    # 今日の目標と進捗バー
     path("", views.home, name="home"),
-     # 目標の新規追加画面
     path("add/", views.add_goal, name="add_goal"),
-    
-     path("toggle/<int:goal_id>/", views.toggle_done, name="toggle_done"),  
-
+    path("edit/<int:goal_id>/", views.edit_goal, name="edit_goal"),
+    path("toggle/<int:goal_id>/", views.toggle_done, name="toggle_done"),
     path("delete/<int:goal_id>/", views.delete_goal, name="delete_goal"),
+    path("history/", views.history, name="history"),
 ]

@@ -6,6 +6,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>今日の進捗</title>
+  <meta name="description" content="今日の目標を登録して、やりきろう。">
+  <meta property="og:title" content="yarikiri">
+  <meta property="og:description" content="今日の目標を登録して、やりきろう。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'tracker/ogp.png' %}">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="{% static 'tracker/favicon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'tracker/style.css' %}">
 </head>
@@ -47,6 +54,7 @@
             <div style="display:grid; gap:10px;">
               <a class="btn btn-ghost" href="{% url 'tracker:add_goal' %}">＋ 目標を追加</a>
               <button class="btn btn-primary" type="button" onclick="saveScreenshot()">📸 今日を保存</button>
+              <a class="btn btn-ghost" href="{% url 'tracker:history' %}">📅 履歴を見る</a>
             </div>
           </div>
         </div>
@@ -90,6 +98,9 @@
                       <button type="submit" class="btn btn-success" title="完了にする">🎉</button>
                     {% endif %}
                   </form>
+
+                  <!-- ✏️：編集 -->
+                  <a class="btn btn-ghost" href="{% url 'tracker:edit_goal' goal.id %}" title="編集" style="font-size:18px;">✏️</a>
 
                   <!-- 🗑️：POSTでdelete -->
                   <form method="post"

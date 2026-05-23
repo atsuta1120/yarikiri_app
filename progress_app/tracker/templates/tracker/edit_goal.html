@@ -1,0 +1,64 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>目標を編集</title>
+  <link rel="icon" href="{% static 'tracker/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'tracker/style.css' %}">
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div>
+        <h1 class="title">目標を編集</h1>
+        <p class="sub">難易度が高いほど、完了時の進捗への貢献が大きくなります</p>
+      </div>
+    </div>
+
+    <div class="card formCard">
+
+      {% if error %}
+        <div style="color:#ef4444; margin-bottom:12px; font-weight:600;">
+          {{ error }}
+        </div>
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="field">
+          <div class="label">目標名</div>
+          <input
+            class="input"
+            type="text"
+            name="title"
+            value="{{ goal.title }}"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <div class="label">難易度</div>
+          <select class="select" name="difficulty">
+            <option value="small" {% if goal.difficulty == 'small' %}selected{% endif %}>小（軽め）</option>
+            <option value="medium" {% if goal.difficulty == 'medium' %}selected{% endif %}>中（普通）</option>
+            <option value="large" {% if goal.difficulty == 'large' %}selected{% endif %}>大（ガッツリ）</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">保存</button>
+          <a class="btn btn-ghost" href="{% url 'tracker:home' %}">キャンセル</a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</body>
+</html>

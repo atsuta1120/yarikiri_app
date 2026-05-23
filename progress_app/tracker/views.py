@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.conf import settings
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
@@ -105,4 +107,60 @@ def delete_goal(request, goal_id):
     goal.delete()
 
     response = redirect("tracker:home")
+    return _attach_client_cookie(response, client_id, is_new)
+
+
+def edit_goal(request, goal_id):
+    client_id, is_new = get_client_id(request)
+    goal = get_object_or_404(Goal, id=goal_id, client_id=client_id)
+
+    if request.method == "POST":
+        title = (request.POST.get("title") or "").strip()
+        difficulty = request.POST.get("difficulty")
+
+        if not title:
+            response = render(request, "tracker/edit_goal.html", {"goal": goal, "error": "タイトルを入力してください"})
+            return _attach_client_cookie(response, client_id, is_new)
+
+        weight_map = {"small": 1, "medium": 3, "large": 5}
+        if difficulty not in weight_map:
+            response = render(request, "tracker/edit_goal.html", {"goal": goal, "error": "難易度が不正です"})
+            return _attach_client_cookie(response, client_id, is_new)
+
+        goal.title = title
+        goal.difficulty = difficulty
+        goal.weight = weight_map[difficulty]
+        goal.save(update_fields=["title", "difficulty", "weight"])
+
+        response = redirect("tracker:home")
+        return _attach_client_cookie(response, client_id, is_new)
+
+    response = render(request, "tracker/edit_goal.html", {"goal": goal})
+    return _attach_client_cookie(response, client_id, is_new)
+
+
+def history(request):
+    client_id, is_new = get_client_id(request)
+
+    today = timezone.localdate()
+    past_goals = Goal.objects.filter(client_id=client_id, date__lt=today).order_by("-date", "-created_at")
+
+    days = defaultdict(list)
+    for goal in past_goals:
+        days[goal.date].append(goal)
+
+    history_list = []
+    for date in sorted(days.keys(), reverse=True):
+        goals = days[date]
+        total = sum(g.weight for g in goals)
+        done = sum(g.weight for g in goals if g.is_done)
+        progress = 0 if total == 0 else int(done / total * 100)
+        history_list.append({
+            "date": date,
+            "date_str": f"{date.year}年{date.month}月{date.day}日（{_WEEKDAY_JA[date.weekday()]}）",
+            "goals": goals,
+            "progress": progress,
+        })
+
+    response = render(request, "tracker/history.html", {"history_list": history_list})
     return _attach_client_cookie(response, client_id, is_new)
