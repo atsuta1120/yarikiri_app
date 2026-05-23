@@ -5,14 +5,20 @@ from django.utils import timezone
 from .models import Goal
 from .utils import get_client_id, CLIENT_ID_COOKIE
 
+_WEEKDAY_JA = ["月", "火", "水", "木", "金", "土", "日"]
+
+
 def home(request):
     client_id, is_new = get_client_id(request)
 
-    goals = Goal.objects.filter(client_id=client_id, date=timezone.localdate()).order_by("-created_at")
+    today = timezone.localdate()
+    goals = Goal.objects.filter(client_id=client_id, date=today).order_by("-created_at")
 
     total_weight = sum(g.weight for g in goals)
     done_weight = sum(g.weight for g in goals if g.is_done)
     progress = 0 if total_weight == 0 else int(done_weight / total_weight * 100)
+
+    today_str = f"{today.year}年{today.month}月{today.day}日（{_WEEKDAY_JA[today.weekday()]}）"
 
     response = render(
         request,
@@ -22,6 +28,7 @@ def home(request):
             "progress_percent": progress,
             "total_weight": total_weight,
             "done_weight": done_weight,
+            "today_str": today_str,
         },
     )
 

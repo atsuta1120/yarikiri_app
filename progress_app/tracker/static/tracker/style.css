@@ -127,6 +127,12 @@ body {
   color: #7f1d1d;
 }
 
+.btn-muted {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  color: var(--muted);
+}
+
 .progressWrap {
   display: flex;
   align-items: center;

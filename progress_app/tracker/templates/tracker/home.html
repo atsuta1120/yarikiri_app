@@ -16,7 +16,7 @@
     <div class="header">
       <div>
         <h1 class="title">今日の目標</h1>
-        <p class="sub">重み（小=1 / 中=3 / 大=5）で進捗が変わります</p>
+        <p class="sub">{{ today_str }}</p>
       </div>
     </div>
 
@@ -69,11 +69,11 @@
 
                   <div class="meta" style="margin-top:8px;">
                     {% if goal.difficulty == 'large' %}
-                      <span class="badge badge-strong">難易度：大（重み{{ goal.weight }}）</span>
+                      <span class="badge badge-strong">難易度：大</span>
                     {% elif goal.difficulty == 'medium' %}
-                      <span class="badge badge-medium">難易度：中（重み{{ goal.weight }}）</span>
+                      <span class="badge badge-medium">難易度：中</span>
                     {% else %}
-                      <span class="badge badge-small">難易度：小（重み{{ goal.weight }}）</span>
+                      <span class="badge badge-small">難易度：小</span>
                     {% endif %}
                   </div>
                 </div>
@@ -81,15 +81,14 @@
                 <!-- 右端：ボタン（🎉 / 🗑️）※POSTのみ -->
                 <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
 
-                  <!-- 🎉：POSTでtoggle -->
+                  <!-- toggle -->
                   <form method="post" action="{% url 'tracker:toggle_done' goal.id %}" style="margin:0;">
                     {% csrf_token %}
-                    <button type="submit"
-                            class="btn btn-success"
-                            title="達成 / 解除"
-                            style="font-size:18px;">
-                      🎉
-                    </button>
+                    {% if goal.is_done %}
+                      <button type="submit" class="btn btn-muted" title="完了を取り消す">↩ 取消</button>
+                    {% else %}
+                      <button type="submit" class="btn btn-success" title="完了にする">✓ 完了</button>
+                    {% endif %}
                   </form>
 
                   <!-- 🗑️：POSTでdelete -->
