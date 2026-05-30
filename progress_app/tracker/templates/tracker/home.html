@@ -66,13 +66,14 @@
 
         <h3 class="sectionTitle">目標一覧</h3>
 
-        {% if goals %}
+        {% if goal_data %}
           <div class="list">
-            {% for goal in goals %}
+            {% for item in goal_data %}
+              {% with goal=item.goal %}
               <div class="item" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
 
                 <!-- 左側：目標情報 -->
-                <div style="min-width:0;">
+                <div style="min-width:0; flex:1;">
                   <p class="itemTitle" style="margin:0;">
                     {% if goal.is_done %}✅{% else %}⬜{% endif %}
                     {{ goal.title }}
@@ -87,6 +88,16 @@
                       <span class="badge badge-small">難易度：小</span>
                     {% endif %}
                     <a class="badge badge-tag" href="{% url 'tracker:timeline' goal.tag %}" title="{{ goal.tag }}のタイムラインを見る"># {{ goal.tag }}</a>
+                  </div>
+
+                  <!-- 閲覧数・リアクション数 -->
+                  <div class="meta home-stats" style="margin-top:6px;">
+                    <span title="閲覧数">👁 {{ item.view_count }}</span>
+                    {% for rtype, rdata in item.reaction_counts.items %}
+                      {% if rdata.count > 0 %}
+                        <span>{{ rdata.emoji }} {{ rdata.count }}</span>
+                      {% endif %}
+                    {% endfor %}
                   </div>
                 </div>
 
@@ -123,6 +134,7 @@
                 </div>
 
               </div>
+              {% endwith %}
             {% endfor %}
           </div>
         {% else %}

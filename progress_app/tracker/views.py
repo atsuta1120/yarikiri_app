@@ -36,11 +36,25 @@ def home(request):
 
     today_str = f"{today.year}年{today.month}月{today.day}日（{_WEEKDAY_JA[today.weekday()]}）"
 
+    goal_data = []
+    for goal in goals:
+        reaction_counts = {}
+        for rtype, emoji in [('fire', '🔥'), ('clap', '👏'), ('muscle', '💪')]:
+            reaction_counts[rtype] = {
+                'emoji': emoji,
+                'count': goal.reactions.filter(reaction_type=rtype).count(),
+            }
+        goal_data.append({
+            'goal': goal,
+            'view_count': goal.views.count(),
+            'reaction_counts': reaction_counts,
+        })
+
     response = render(
         request,
         "tracker/home.html",
         {
-            "goals": goals,
+            "goal_data": goal_data,
             "progress_percent": progress,
             "total_weight": total_weight,
             "done_weight": done_weight,
