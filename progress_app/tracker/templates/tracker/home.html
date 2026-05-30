@@ -13,6 +13,9 @@
   <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
   <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'tracker/ogp.png' %}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="yarikiri">
+  <meta name="twitter:description" content="今日の目標を登録して、やりきろう。">
+  <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'tracker/ogp.png' %}">
   <link rel="icon" href="{% static 'tracker/favicon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'tracker/style.css' %}">
 </head>
@@ -83,6 +86,7 @@
                     {% else %}
                       <span class="badge badge-small">難易度：小</span>
                     {% endif %}
+                    <a class="badge badge-tag" href="{% url 'tracker:timeline' goal.tag %}" title="{{ goal.tag }}のタイムラインを見る"># {{ goal.tag }}</a>
                   </div>
                 </div>
 

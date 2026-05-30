@@ -1,11 +1,11 @@
 from collections import defaultdict
 
 from django.conf import settings
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from .models import Goal
+from .models import Goal, Reaction, GoalView
 from .utils import get_client_id, CLIENT_ID_COOKIE
 
 _WEEKDAY_JA = ["月", "火", "水", "木", "金", "土", "日"]
@@ -56,6 +56,7 @@ def add_goal(request):
     if request.method == "POST":
         title = (request.POST.get("title") or "").strip()
         difficulty = request.POST.get("difficulty")
+        tag = (request.POST.get("tag") or "").strip() or "未分類"
 
         if not title:
             response = render(request, "tracker/add_goal.html", {"error": "タイトルを入力してください"})
@@ -73,6 +74,7 @@ def add_goal(request):
             weight=weight_map[difficulty],
             is_done=False,
             date=timezone.localdate(),
+            tag=tag,
         )
 
         response = redirect(reverse("tracker:add_goal") + "?added=1")
@@ -117,6 +119,7 @@ def edit_goal(request, goal_id):
     if request.method == "POST":
         title = (request.POST.get("title") or "").strip()
         difficulty = request.POST.get("difficulty")
+        tag = (request.POST.get("tag") or "").strip() or "未分類"
 
         if not title:
             response = render(request, "tracker/edit_goal.html", {"goal": goal, "error": "タイトルを入力してください"})
@@ -130,7 +133,8 @@ def edit_goal(request, goal_id):
         goal.title = title
         goal.difficulty = difficulty
         goal.weight = weight_map[difficulty]
-        goal.save(update_fields=["title", "difficulty", "weight"])
+        goal.tag = tag
+        goal.save(update_fields=["title", "difficulty", "weight", "tag"])
 
         response = redirect("tracker:home")
         return _attach_client_cookie(response, client_id, is_new)
@@ -163,4 +167,79 @@ def history(request):
         })
 
     response = render(request, "tracker/history.html", {"history_list": history_list})
+    return _attach_client_cookie(response, client_id, is_new)
+
+
+REACTION_EMOJI = {
+    'fire': '🔥',
+    'clap': '👏',
+    'muscle': '💪',
+}
+
+
+def timeline(request, tag):
+    client_id, is_new = get_client_id(request)
+    today = timezone.localdate()
+
+    goals = Goal.objects.filter(tag=tag, date=today).order_by("-created_at")
+
+    # 他人のGoalにのみ閲覧記録を作成
+    for goal in goals:
+        if goal.client_id != client_id:
+            GoalView.objects.get_or_create(goal=goal, client_id=client_id)
+
+    my_reactions = set(
+        Reaction.objects.filter(
+            goal__in=goals, client_id=client_id
+        ).values_list('goal_id', 'reaction_type')
+    )
+
+    goal_list = []
+    for goal in goals:
+        reaction_counts = {}
+        for rtype, emoji in REACTION_EMOJI.items():
+            count = goal.reactions.filter(reaction_type=rtype).count()
+            reaction_counts[rtype] = {
+                'emoji': emoji,
+                'count': count,
+                'reacted': (goal.id, rtype) in my_reactions,
+            }
+        goal_list.append({
+            'goal': goal,
+            'is_mine': goal.client_id == client_id,
+            'view_count': goal.views.count(),
+            'reaction_counts': reaction_counts,
+        })
+
+    response = render(request, "tracker/timeline.html", {
+        'tag': tag,
+        'goal_list': goal_list,
+        'today_str': f"{today.year}年{today.month}月{today.day}日（{_WEEKDAY_JA[today.weekday()]}）",
+    })
+    return _attach_client_cookie(response, client_id, is_new)
+
+
+def react_goal(request, goal_id, reaction_type):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    if reaction_type not in REACTION_EMOJI:
+        return JsonResponse({'error': 'invalid reaction'}, status=400)
+
+    client_id, is_new = get_client_id(request)
+    goal = get_object_or_404(Goal, id=goal_id)
+
+    reaction, created = Reaction.objects.get_or_create(
+        goal=goal,
+        client_id=client_id,
+        reaction_type=reaction_type,
+    )
+    if not created:
+        reaction.delete()
+        reacted = False
+    else:
+        reacted = True
+
+    count = goal.reactions.filter(reaction_type=reaction_type).count()
+    response = JsonResponse({'reacted': reacted, 'count': count})
     return _attach_client_cookie(response, client_id, is_new)

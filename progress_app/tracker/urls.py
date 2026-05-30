@@ -10,4 +10,6 @@ urlpatterns = [
     path("toggle/<int:goal_id>/", views.toggle_done, name="toggle_done"),
     path("delete/<int:goal_id>/", views.delete_goal, name="delete_goal"),
     path("history/", views.history, name="history"),
+    path("timeline/<str:tag>/", views.timeline, name="timeline"),
+    path("react/<int:goal_id>/<str:reaction_type>/", views.react_goal, name="react_goal"),
 ]

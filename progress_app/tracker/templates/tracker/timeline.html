@@ -1,0 +1,122 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title># {{ tag }} のタイムライン</title>
+  <link rel="icon" href="{% static 'tracker/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'tracker/style.css' %}">
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div>
+        <h1 class="title"># {{ tag }}</h1>
+        <p class="sub">{{ today_str }} の宣言一覧</p>
+      </div>
+      <div>
+        <a class="btn btn-ghost" href="{% url 'tracker:home' %}">← 今日の目標へ</a>
+      </div>
+    </div>
+
+    <div class="card timeline-intro">
+      <p class="timeline-intro-text">同じ目標の人が今日何を宣言しているか見える。見られているから逃げにくい。リアクションでお互いに応援しよう。今日もやり切ろう。💪</p>
+    </div>
+
+    {% if goal_list %}
+      <div class="list" style="margin-top: 16px;">
+        {% for item in goal_list %}
+          <div class="item timeline-item {% if item.is_mine %}timeline-item-mine{% endif %}">
+
+            <!-- ヘッダー：自分 or 他人の宣言 -->
+            <div class="timeline-meta">
+              {% if item.is_mine %}
+                <span class="timeline-mine-badge">あなたの宣言</span>
+              {% else %}
+                <span class="timeline-other-badge">みんなの宣言</span>
+              {% endif %}
+              <span class="timeline-time">{{ item.goal.created_at|date:"H:i" }}</span>
+              <span class="timeline-views" title="閲覧数">👁 {{ item.view_count }}</span>
+            </div>
+
+            <!-- 目標タイトル -->
+            <p class="itemTitle" style="margin: 8px 0 0;">
+              {% if item.goal.is_done %}✅{% else %}⬜{% endif %}
+              {{ item.goal.title }}
+            </p>
+
+            <!-- バッジ -->
+            <div class="meta" style="margin-top: 8px;">
+              {% if item.goal.difficulty == 'large' %}
+                <span class="badge badge-strong">難易度：大</span>
+              {% elif item.goal.difficulty == 'medium' %}
+                <span class="badge badge-medium">難易度：中</span>
+              {% else %}
+                <span class="badge badge-small">難易度：小</span>
+              {% endif %}
+            </div>
+
+            <!-- リアクションボタン -->
+            <div class="reaction-row" data-goal-id="{{ item.goal.id }}">
+              {% for rtype, rdata in item.reaction_counts.items %}
+                <button
+                  class="reaction-btn {% if rdata.reacted %}reacted{% endif %}"
+                  data-type="{{ rtype }}"
+                  data-goal="{{ item.goal.id }}"
+                  data-url="{% url 'tracker:react_goal' item.goal.id rtype %}"
+                  onclick="handleReaction(this)"
+                >
+                  {{ rdata.emoji }} <span class="reaction-count">{{ rdata.count }}</span>
+                </button>
+              {% endfor %}
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card" style="text-align:center; padding: 40px 0; margin-top:16px;">
+        <p class="empty" style="margin-bottom: 16px;">今日の「# {{ tag }}」宣言はまだありません。</p>
+        <a class="btn btn-primary" href="{% url 'tracker:add_goal' %}">最初に宣言する！</a>
+      </div>
+    {% endif %}
+
+  </div>
+
+  <script>
+  function handleReaction(btn) {
+    const url = btn.dataset.url;
+    const csrfToken = getCookie('csrftoken');
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json',
+      },
+      credentials: 'same-origin',
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.querySelector('.reaction-count').textContent = data.count;
+      if (data.reacted) {
+        btn.classList.add('reacted');
+      } else {
+        btn.classList.remove('reacted');
+      }
+    })
+    .catch(() => {});
+  }
+
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    return v ? v[2] : null;
+  }
+  </script>
+
+</body>
+</html>

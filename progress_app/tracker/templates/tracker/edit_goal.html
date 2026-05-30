@@ -51,6 +51,27 @@
           </select>
         </div>
 
+        <div class="field">
+          <div class="label">タグ（カテゴリ）</div>
+          <input
+            class="input"
+            type="text"
+            name="tag"
+            value="{{ goal.tag }}"
+            placeholder="例：筋トレ / 英語 / 副業（空欄は「未分類」）"
+            list="tag-suggestions"
+          >
+          <datalist id="tag-suggestions">
+            <option value="AI学習">
+            <option value="筋トレ">
+            <option value="英語">
+            <option value="副業">
+            <option value="読書">
+            <option value="朝活">
+            <option value="ダイエット">
+          </datalist>
+        </div>
+
         <div class="actions">
           <button class="btn btn-primary" type="submit">保存</button>
           <a class="btn btn-ghost" href="{% url 'tracker:home' %}">キャンセル</a>
