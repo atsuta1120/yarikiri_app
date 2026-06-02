@@ -8,6 +8,18 @@ class Goal(models.Model):
         ('large', '大'),
     ]
 
+    TAG_CHOICES = [
+        ('未分類', '未分類'),
+        ('学習', '学習'),
+        ('健康', '健康'),
+        ('お金', 'お金'),
+        ('仕事', '仕事'),
+        ('生活改善', '生活改善'),
+        ('趣味', '趣味'),
+        ('創作', '創作'),
+        ('人間関係', '人間関係'),
+    ]
+
     title = models.CharField(max_length=255)
 
     difficulty = models.CharField(
@@ -27,7 +39,7 @@ class Goal(models.Model):
 
     client_id = models.CharField(max_length=36, db_index=True, null=True, blank=True)
 
-    tag = models.CharField(max_length=50, blank=True, default='未分類')
+    tag = models.CharField(max_length=50, choices=TAG_CHOICES, blank=True, default='未分類')
 
 
 class Reaction(models.Model):

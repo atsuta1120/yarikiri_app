@@ -61,22 +61,11 @@
 
         <div class="field">
           <div class="label">タグ（カテゴリ）</div>
-          <input
-            class="input"
-            type="text"
-            name="tag"
-            placeholder="例：筋トレ / 英語 / 副業（空欄は「未分類」）"
-            list="tag-suggestions"
-          >
-          <datalist id="tag-suggestions">
-            <option value="AI学習">
-            <option value="筋トレ">
-            <option value="英語">
-            <option value="副業">
-            <option value="読書">
-            <option value="朝活">
-            <option value="ダイエット">
-          </datalist>
+          <select class="select" name="tag">
+            {% for value, label in tag_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
         </div>
 
         <div class="actions">

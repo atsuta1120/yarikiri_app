@@ -8,6 +8,8 @@ from django.utils import timezone
 from .models import Goal, Reaction, GoalView
 from .utils import get_client_id, CLIENT_ID_COOKIE
 
+_VALID_TAGS = {choice[0] for choice in Goal.TAG_CHOICES}
+
 _WEEKDAY_JA = ["月", "火", "水", "木", "金", "土", "日"]
 
 
@@ -67,18 +69,22 @@ def home(request):
 def add_goal(request):
     client_id, is_new = get_client_id(request)
 
+    tag_choices = Goal.TAG_CHOICES
+
     if request.method == "POST":
         title = (request.POST.get("title") or "").strip()
         difficulty = request.POST.get("difficulty")
-        tag = (request.POST.get("tag") or "").strip() or "未分類"
+        tag = request.POST.get("tag") or "未分類"
+        if tag not in _VALID_TAGS:
+            tag = "未分類"
 
         if not title:
-            response = render(request, "tracker/add_goal.html", {"error": "タイトルを入力してください"})
+            response = render(request, "tracker/add_goal.html", {"error": "タイトルを入力してください", "tag_choices": tag_choices})
             return _attach_client_cookie(response, client_id, is_new)
 
         weight_map = {"small": 1, "medium": 3, "large": 5}
         if difficulty not in weight_map:
-            response = render(request, "tracker/add_goal.html", {"error": "難易度が不正です"})
+            response = render(request, "tracker/add_goal.html", {"error": "難易度が不正です", "tag_choices": tag_choices})
             return _attach_client_cookie(response, client_id, is_new)
 
         Goal.objects.create(
@@ -95,7 +101,7 @@ def add_goal(request):
         return _attach_client_cookie(response, client_id, is_new)
 
     added = request.GET.get("added") == "1"
-    response = render(request, "tracker/add_goal.html", {"added": added})
+    response = render(request, "tracker/add_goal.html", {"added": added, "tag_choices": tag_choices})
     return _attach_client_cookie(response, client_id, is_new)
 
 
@@ -129,19 +135,22 @@ def delete_goal(request, goal_id):
 def edit_goal(request, goal_id):
     client_id, is_new = get_client_id(request)
     goal = get_object_or_404(Goal, id=goal_id, client_id=client_id)
+    tag_choices = Goal.TAG_CHOICES
 
     if request.method == "POST":
         title = (request.POST.get("title") or "").strip()
         difficulty = request.POST.get("difficulty")
-        tag = (request.POST.get("tag") or "").strip() or "未分類"
+        tag = request.POST.get("tag") or "未分類"
+        if tag not in _VALID_TAGS:
+            tag = "未分類"
 
         if not title:
-            response = render(request, "tracker/edit_goal.html", {"goal": goal, "error": "タイトルを入力してください"})
+            response = render(request, "tracker/edit_goal.html", {"goal": goal, "error": "タイトルを入力してください", "tag_choices": tag_choices})
             return _attach_client_cookie(response, client_id, is_new)
 
         weight_map = {"small": 1, "medium": 3, "large": 5}
         if difficulty not in weight_map:
-            response = render(request, "tracker/edit_goal.html", {"goal": goal, "error": "難易度が不正です"})
+            response = render(request, "tracker/edit_goal.html", {"goal": goal, "error": "難易度が不正です", "tag_choices": tag_choices})
             return _attach_client_cookie(response, client_id, is_new)
 
         goal.title = title
@@ -153,7 +162,7 @@ def edit_goal(request, goal_id):
         response = redirect("tracker:home")
         return _attach_client_cookie(response, client_id, is_new)
 
-    response = render(request, "tracker/edit_goal.html", {"goal": goal})
+    response = render(request, "tracker/edit_goal.html", {"goal": goal, "tag_choices": tag_choices})
     return _attach_client_cookie(response, client_id, is_new)
 
 
