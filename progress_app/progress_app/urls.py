@@ -15,10 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path, include
+
+
+def health(request):
+    """UptimeRobot 用。DB に触れないので Neon の計算時間を消費しない"""
+    return HttpResponse("ok")
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("health/", health),
 
     #trackerアプリのURL設定を読み込む
     path("", include("tracker.urls")),
