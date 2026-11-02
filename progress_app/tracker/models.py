@@ -65,3 +65,13 @@ class GoalView(models.Model):
 
     class Meta:
         unique_together = ('goal', 'client_id')
+
+
+class ClientSetting(models.Model):
+    """client_id ごとの設定。行が無いユーザーはデフォルト値で扱う"""
+
+    RESET_HOUR_CHOICES = [(h, f'{h}:00') for h in range(0, 7)]
+
+    client_id = models.CharField(max_length=36, unique=True)
+    # 「今日」が切り替わる時刻（日本時間）。3なら深夜3時までは前日扱い
+    reset_hour = models.IntegerField(choices=RESET_HOUR_CHOICES, default=0)

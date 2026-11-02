@@ -1,12 +1,11 @@
 import json
 
 from django.http import JsonResponse
-from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import Goal, GoalView, Reaction
-from .utils import CLIENT_ID_COOKIE, get_client_id
+from .models import ClientSetting, Goal, GoalView, Reaction
+from .utils import CLIENT_ID_COOKIE, get_client_id, get_reset_hour, get_today
 
 _VALID_TAGS = {choice[0] for choice in Goal.TAG_CHOICES}
 _VALID_DIFFICULTIES = {"small", "medium", "large"}
@@ -56,7 +55,7 @@ def _goal_to_dict(goal, client_id=None):
 @require_http_methods(["GET", "POST"])
 def goals(request):
     client_id, is_new = get_client_id(request)
-    today = timezone.localdate()
+    today = get_today(client_id)
 
     if request.method == "GET":
         goal_list = Goal.objects.filter(client_id=client_id, date=today).order_by("-created_at")
@@ -165,7 +164,7 @@ def toggle_goal(request, goal_id):
 @require_http_methods(["GET"])
 def timeline_api(request, tag):
     client_id, is_new = get_client_id(request)
-    today = timezone.localdate()
+    today = get_today(client_id)
 
     if tag not in _VALID_TAGS:
         return JsonResponse({"error": "Invalid tag"}, status=400)
@@ -214,7 +213,7 @@ def react_goal_api(request, goal_id, reaction_type):
 @require_http_methods(["GET"])
 def history_api(request):
     client_id, is_new = get_client_id(request)
-    today = timezone.localdate()
+    today = get_today(client_id)
 
     past_goals = Goal.objects.filter(client_id=client_id, date__lt=today).order_by("-date", "-created_at")
 
@@ -244,3 +243,25 @@ def history_api(request):
 def tag_choices_api(request):
     response = JsonResponse({"tags": [{"value": v, "label": l} for v, l in Goal.TAG_CHOICES]})
     return response
+
+
+@csrf_exempt
+@require_http_methods(["GET", "PUT"])
+def settings_api(request):
+    client_id, is_new = get_client_id(request)
+
+    if request.method == "PUT":
+        try:
+            body = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        reset_hour = body.get("reset_hour")
+        valid_hours = {h for h, _ in ClientSetting.RESET_HOUR_CHOICES}
+        if type(reset_hour) is not int or reset_hour not in valid_hours:
+            return JsonResponse({"error": "リセット時刻が不正です"}, status=400)
+
+        ClientSetting.objects.update_or_create(client_id=client_id, defaults={"reset_hour": reset_hour})
+
+    response = JsonResponse({"reset_hour": get_reset_hour(client_id)})
+    return _attach_cookie(response, client_id, is_new)

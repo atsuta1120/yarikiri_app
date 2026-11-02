@@ -21,4 +21,5 @@ urlpatterns = [
     path("api/react/<int:goal_id>/<str:reaction_type>/", api_views.react_goal_api, name="api_react_goal"),
     path("api/history/", api_views.history_api, name="api_history"),
     path("api/tags/", api_views.tag_choices_api, name="api_tags"),
+    path("api/settings/", api_views.settings_api, name="api_settings"),
 ]

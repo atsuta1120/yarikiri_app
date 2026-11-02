@@ -4,9 +4,8 @@ from django.conf import settings
 from django.http import HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils import timezone
 from .models import Goal, Reaction, GoalView
-from .utils import get_client_id, CLIENT_ID_COOKIE
+from .utils import get_client_id, get_today, CLIENT_ID_COOKIE
 
 _VALID_TAGS = {choice[0] for choice in Goal.TAG_CHOICES}
 
@@ -29,7 +28,7 @@ def _attach_client_cookie(response, client_id, is_new):
 def home(request):
     client_id, is_new = get_client_id(request)
 
-    today = timezone.localdate()
+    today = get_today(client_id)
     goals = Goal.objects.filter(client_id=client_id, date=today).order_by("-created_at")
 
     total_weight = sum(g.weight for g in goals)
@@ -93,7 +92,7 @@ def add_goal(request):
             difficulty=difficulty,
             weight=weight_map[difficulty],
             is_done=False,
-            date=timezone.localdate(),
+            date=get_today(client_id),
             tag=tag,
         )
 
@@ -169,7 +168,7 @@ def edit_goal(request, goal_id):
 def history(request):
     client_id, is_new = get_client_id(request)
 
-    today = timezone.localdate()
+    today = get_today(client_id)
     past_goals = Goal.objects.filter(client_id=client_id, date__lt=today).order_by("-date", "-created_at")
 
     days = defaultdict(list)
@@ -202,7 +201,7 @@ REACTION_EMOJI = {
 
 def timeline(request, tag):
     client_id, is_new = get_client_id(request)
-    today = timezone.localdate()
+    today = get_today(client_id)
 
     goals = Goal.objects.filter(tag=tag, date=today).order_by("-created_at")
 
